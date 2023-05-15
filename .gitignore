@@ -1,4 +1,4 @@
-# Default ignored files
+source venv# Default ignored files
 /shelf/
 **xml
 */venv/*
@@ -10,3 +10,4 @@
 *.coverage
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+/venv/
