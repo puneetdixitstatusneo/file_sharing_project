@@ -4,4 +4,4 @@
   JWT_REFRESH_TOKEN_EXPIRES: !timedelta '1440 minutes'
   SECRET_KEY: 'ee4c120c-e5ee-40cf-85ef-cc1505d936aa'
   PROPAGATE_EXCEPTIONS: true
-  SERVER_PATH: ""
+  SERVER_PATH: "/Users/anirudh.agarwal/Desktop/volumeA"
