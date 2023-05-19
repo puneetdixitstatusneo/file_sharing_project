@@ -40,12 +40,19 @@ CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 #########################################################################################
 
 
+
+
+
+
+
+
+
+
 # To use mysql with command line
 # export PATH=${PATH}:/usr/local/mysql/bin
 
 
-
-#########################################################################################
+############################  Environment Variables:  #############################
 # List All Environment Variables: # printenv
 # echo $[variable name]
 # echo $PATH
