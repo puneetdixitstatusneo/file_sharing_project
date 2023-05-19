@@ -8,8 +8,9 @@ class AddFileSchema(Schema):
     """
 
     file_name = fields.String(required=True)
-    file_location = fields.String(required=True)
+    # file_location = fields.String(required=True)
     project_id = fields.Integer(required=True)
+    
 
 
 class UpdateFileSchema(Schema):
@@ -18,5 +19,5 @@ class UpdateFileSchema(Schema):
     """
 
     file_name = fields.String(required=False)
-    file_location = fields.String(required=False)
+    # file_location = fields.String(required=False)
     project_id = fields.Integer(required=False)

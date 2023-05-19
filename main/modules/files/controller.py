@@ -2,12 +2,20 @@ from main.custom_exceptions import EntityNotFoundError, UnauthorizedUserError
 from main.modules.files.model import Files
 from main.modules.auth.controller import AuthUserController
 from main.modules.auth.model import AuthUser
-
+from flask import current_app
+import os
 
 class FilesController:
     """
     This is the controller class which is used to handle all the logical and CURD operations.
     """
+    @classmethod
+    def save_file(cls, request):
+        f = request.files["file"]
+        server_path = current_app.config.get('SERVER_PATH')
+        file_path = os.path.join(server_path, f.filename)
+        f.save(file_path)
+        return file_path
 
     @classmethod
     def add_file(cls, file_data: dict):
