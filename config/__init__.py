@@ -39,6 +39,7 @@ class DevelopmentConfig:
     JWT_REFRESH_TOKEN_EXPIRES = config.get("JWT_REFRESH_TOKEN_EXPIRES")
     SECRET_KEY = config.get("SECRET_KEY")
     PROPAGATE_EXCEPTIONS = config.get("PROPAGATE_EXCEPTIONS")
+    SERVER_PATH = config.get("SERVER_PATH")
     DEBUG = True
 
 
@@ -49,6 +50,7 @@ class TestingConfig:
     JWT_REFRESH_TOKEN_EXPIRES = test_config.get("JWT_REFRESH_TOKEN_EXPIRES")
     SECRET_KEY = test_config.get("SECRET_KEY")
     PROPAGATE_EXCEPTIONS = test_config.get("PROPAGATE_EXCEPTIONS")
+    SERVER_PATH = config.get("SERVER_PATH")
     DEBUG = True
     
 
@@ -59,6 +61,7 @@ class ProductionConfig():
     JWT_REFRESH_TOKEN_EXPIRES = prod_config.get("JWT_REFRESH_TOKEN_EXPIRES")
     SECRET_KEY = prod_config.get("SECRET_KEY")
     PROPAGATE_EXCEPTIONS = prod_config.get("PROPAGATE_EXCEPTIONS")
+    SERVER_PATH = config.get("SERVER_PATH")
     DEBUG = False
 
 
@@ -66,3 +69,4 @@ class ProductionConfig():
 
 
 config_by_name = dict(dev=DevelopmentConfig, test=TestingConfig, prod=ProductionConfig)
+print(config_by_name)
