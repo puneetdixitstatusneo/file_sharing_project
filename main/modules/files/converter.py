@@ -5,11 +5,11 @@ from yaml import SafeLoader
 
 
 class FileConversion():
-    def __init__(self, source_ext, destination_ext, source_file_path):
+    def __init__(self, source_file_path, source_ext, destination_ext):
         self.source_ext = source_ext
         self.destination_ext = destination_ext
         self.source_file_path = source_file_path
-        return self.converter(self.source_ext, self.destination_ext, self.source_file_path)
+        self.destination_file_path = self.converter(self.source_ext, self.destination_ext, self.source_file_path)
 
 
     def converter(self, source_ext, destination_ext, source_file_path):
@@ -44,14 +44,16 @@ class FileConversion():
 
 
     def csv_to_json(self, csvFilePath, jsonFilePath):
-        data = {}
-        with open(csvFilePath, encoding='utf-8') as csvf:
-            csvReader = csv.DictReader(csvf)
-            for rows in csvReader:
-                key = rows['No']
-                data[key] = rows
-        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf:
-            jsonf.write(json.dumps(data, indent=4))
+        jsonArray = []
+        with open(csvFilePath, encoding='utf-8') as csvf: 
+            csvReader = csv.DictReader(csvf) 
+            for row in csvReader: 
+                jsonArray.append(row)
+    
+        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf: 
+            jsonString = json.dumps(jsonArray, indent=4)
+            jsonf.write(jsonString)
+
         return jsonFilePath
 
 

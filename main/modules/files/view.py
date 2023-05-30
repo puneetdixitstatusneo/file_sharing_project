@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 from main.modules.files.controller import FilesController
 from main.modules.projects.controller import ProjectsController
+from main.modules.files.converter import FileConversion
 from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema, FileConversionSchema
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
@@ -100,7 +101,7 @@ class FilesApi3(Resource):
 
 
 class FilesConversionAPI(Resource):
-    method_decorators = [jwt_required]
+    method_decorators = [jwt_required()]
 
     def post(self):
         """
@@ -108,15 +109,27 @@ class FilesConversionAPI(Resource):
         """
         auth_user = AuthUserController.get_current_auth_user()
         data = get_data_from_request_or_raise_validation_error(FileConversionSchema, request.json)
+        print(data)
         file_data = FilesController.get_file_by_file_link(data["file_link"], auth_user)
-        
+        print(file_data)
+        dest_file_location = FileConversion(file_data["file_location"], data["from_ext"], data["to_ext"]).destination_file_path
+        file_data.update({"file_name": os.path.basename(dest_file_location)})
+        file_data.update({"extension": "."+data["to_ext"]})
+        file_data.update({"file_location": dest_file_location})
+        file_data.update({"uid": generate_uuid()})
+        del file_data["created_at"]
+        del file_data["updated_at"]
+        del file_data["id"]
+        del file_data["username"]
+        file_data.update({"user_id": auth_user.id})
+
+        file_id = FilesController.add_file(file_data)
         response = make_response(
-            jsonify({"message": "File converted", "location": f"/projects/{project_id}", "id": project_id}), 201
+            jsonify({"message": "File Conversion Successfull.", "location": dest_file_location, "id": file_id}), 201
         )
-        response.headers["Location"] = f"/projects/{project_id}"
+        response.headers["Location"] = f"file_location"
         return response
 
-        
 
 
 file_namespace = Namespace("files", description="File Operations")
