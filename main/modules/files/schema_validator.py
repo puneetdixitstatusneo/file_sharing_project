@@ -21,3 +21,14 @@ class UpdateFileSchema(Schema):
     file_name = fields.String(required=False)
     # file_location = fields.String(required=False)
     project_id = fields.Integer(required=False)
+
+
+
+class FileConversionSchema(Schema):
+    """
+    Schema to perform Conversion Operations
+    """
+
+    from_ext = fields.String(required=False)
+    to_ext = fields.String(required=False)
+    file_link = fields.String(required=False)
