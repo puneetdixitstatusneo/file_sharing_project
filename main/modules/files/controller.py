@@ -4,16 +4,19 @@ from main.modules.auth.controller import AuthUserController
 from main.modules.auth.model import AuthUser
 from flask import current_app
 import os
+from datetime import datetime
 
 class FilesController:
     """
     This is the controller class which is used to handle all the logical and CURD operations.
     """
     @classmethod
-    def save_file(cls, request):
+    def save_file(cls, request, user_id):
         f = request.files["file"]
         server_path = current_app.config.get('SERVER_PATH')
-        file_path = os.path.join(server_path, f.filename)
+        now = datetime.now().date().strftime("%Y-%m-%d")
+        os.makedirs(os.path.join(server_path, str(user_id), now), exist_ok=True)
+        file_path = os.path.join(server_path, str(user_id), now, f.filename)
         f.save(file_path)
         return file_path
 
@@ -52,6 +55,44 @@ class FilesController:
         file = Files.query.filter_by(id=file_id).first()
         cls.required_checks(auth_user, file)
         return file.serialize()
+    
+
+    @classmethod
+    def get_file_by_uuid(cls, uuid: str, auth_user: AuthUser) -> dict:
+        """
+        This function is used to get an file by UUID.
+        :param uid:
+        :param auth_user:
+        :return dict:
+        """
+        file = Files.query.filter_by(uid=uuid).first()
+        cls.required_checks(auth_user, file)
+        return file.serialize()
+    
+
+    @classmethod
+    def get_file_by_file_link(cls, file_link: str, auth_user: AuthUser) -> dict:
+        """
+        This function is used to get an file by file link.
+        :param file_link:
+        :param auth_user:
+        :return dict:
+        """
+        file = Files.query.filter_by(file_location=file_link).first()
+        cls.required_checks(auth_user, file)
+        return file.serialize()
+
+
+    @classmethod
+    def generate_file_link(cls, file_location: str, auth_user: AuthUser) -> dict:
+        """
+        This function is used to generate file link from file location.
+        :param file_location:
+        :param auth_user:
+        :return dict:
+        """
+        pass
+
 
     @classmethod
     def update_file(cls, file_id: int, updated_file: dict, auth_user: AuthUser) -> dict:
@@ -77,6 +118,7 @@ class FilesController:
         """
         file = Files.query.filter_by(id=file_id).first()
         cls.required_checks(auth_user, file)
+        os.remove(file.file_location)
         Files.delete(id=file_id)
         return {"msg": "success"}
 
