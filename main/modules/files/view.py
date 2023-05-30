@@ -1,10 +1,10 @@
-from flask import jsonify, make_response, request
+import os
+from flask import jsonify, make_response, request, send_from_directory, send_file
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
-import os
 from main.modules.files.controller import FilesController
 from main.modules.projects.controller import ProjectsController
-from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema
+from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema, FileConversionSchema
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
 
@@ -34,7 +34,7 @@ class FilesApi(Resource):
         data.update({"extension": os.path.splitext(file.filename)[-1]})
         data.update({"uid": generate_uuid()})
         data.update({"user_id": auth_user.id})
-        file_location = FilesController.save_file(request)
+        file_location = FilesController.save_file(request, auth_user.id)
         data.update({"file_location": file_location})
         file_id = FilesController.add_file(data)
         response = make_response(
@@ -80,29 +80,48 @@ class FilesApi2(Resource):
         return jsonify(response)
 
 
-# class FilesApi3(Resource):
-#     method_decorators = [jwt_required()]
+class FilesApi3(Resource):
+    method_decorators = [jwt_required()]
 
-#     def post(self):
-#         """
-#         This function is used to upload new file to the database.
-#         :return:
-#         """
-#         auth_user = AuthUserController.get_current_auth_user()
-#         data = get_data_from_request_or_raise_validation_error(AddFileSchema, request.json)
-#         ProjectsController.get_project_by_project_id(data["project_id"], auth_user)
-#         data.update({"extension": os.path.splitext(data["file_name"])[-1]})
-#         data.update({"uid": generate_uuid()})
-#         data.update({"user_id": auth_user.id})
-#         file_id = FilesController.add_file(data)
-#         response = make_response(
-#             jsonify({"message": "File added", "location": f"/files/{file_id}", "id": file_id}), 201
-#         )
-#         response.headers["Location"] = f"/files/{file_id}"
-#         return response
+    def get(self, uuid : str, file_name :str):
+        """
+        This function is used to download a file.
+        :return:
+        """
+        auth_user = AuthUserController.get_current_auth_user()
+        file = FilesController.get_file_by_uuid(uuid, auth_user)
+        print(os.path.dirname(file["file_location"]))
+        print(file["file_name"])
+        # if file["extension"].lower() in [".json", ".xml"]:
+        #     return send_from_directory(directory=file["file_location"], path=file["file_name"], as_attachment=False)
+        # else:
+        return send_file(file["file_location"], download_name=file["file_name"],mimetype='text/plain')
+        # return send_from_directory(directory=os.path.dirname(file["file_location"]), path=file["file_name"], as_attachment=True)
+
+
+class FilesConversionAPI(Resource):
+    method_decorators = [jwt_required]
+
+    def post(self):
+        """
+        This function is used to perform file conversion operations.
+        """
+        auth_user = AuthUserController.get_current_auth_user()
+        data = get_data_from_request_or_raise_validation_error(FileConversionSchema, request.json)
+        file_data = FilesController.get_file_by_file_link(data["file_link"], auth_user)
+        
+        response = make_response(
+            jsonify({"message": "File converted", "location": f"/projects/{project_id}", "id": project_id}), 201
+        )
+        response.headers["Location"] = f"/projects/{project_id}"
+        return response
+
+        
 
 
 file_namespace = Namespace("files", description="File Operations")
 file_namespace.add_resource(FilesApi, "")
 file_namespace.add_resource(FilesApi2, "/<int:file_id>")
-file_namespace.add_resource(FilesApi, "/upload")
+file_namespace.add_resource(FilesApi3, "/<string:uuid>/<string:file_name>")
+
+file_namespace.add_resource(FilesConversionAPI, "/convert")
