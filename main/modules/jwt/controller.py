@@ -4,6 +4,9 @@ from flask_jwt_extended import (
     get_jwt,
     get_jwt_identity,
 )
+import os
+from config import config_by_name
+env = os.getenv("FLASK_ENV") or "dev"
 
 from main.modules.auth.model import AuthUser
 from main.modules.jwt.model import TokenBlocklist
@@ -55,6 +58,8 @@ class JWTController:
         return {
             "access_token": create_access_token(identity=identity),
             "refresh_token": create_refresh_token(identity=identity),
+            "expiry": int(config_by_name[env].JWT_ACCESS_TOKEN_EXPIRES.total_seconds()),
+            "token_type": "bearer"
         }
 
     @classmethod
