@@ -118,7 +118,8 @@ class FilesController:
         """
         file = Files.query.filter_by(id=file_id).first()
         cls.required_checks(auth_user, file)
-        os.remove(file.file_location)
+        if os.path.exists(file.file_location):
+            os.remove(file.file_location)
         Files.delete(id=file_id)
         return {"msg": "success"}
 

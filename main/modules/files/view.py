@@ -36,6 +36,8 @@ class FilesApi(Resource):
         data.update({"uid": generate_uuid()})
         data.update({"user_id": auth_user.id})
         file_location = FilesController.save_file(request, auth_user.id)
+        size = os.stat(file_location).st_size
+        data.update({"size": size})
         data.update({"file_location": file_location})
         file_id = FilesController.add_file(data)
         response = make_response(
@@ -109,9 +111,7 @@ class FilesConversionAPI(Resource):
         """
         auth_user = AuthUserController.get_current_auth_user()
         data = get_data_from_request_or_raise_validation_error(FileConversionSchema, request.json)
-        print(data)
         file_data = FilesController.get_file_by_file_link(data["file_link"], auth_user)
-        print(file_data)
         dest_file_location = FileConversion(file_data["file_location"], data["from_ext"], data["to_ext"]).destination_file_path
         file_data.update({"file_name": os.path.basename(dest_file_location)})
         file_data.update({"extension": "."+data["to_ext"]})
@@ -136,5 +136,4 @@ file_namespace = Namespace("files", description="File Operations")
 file_namespace.add_resource(FilesApi, "")
 file_namespace.add_resource(FilesApi2, "/<int:file_id>")
 file_namespace.add_resource(FilesApi3, "/<string:uuid>/<string:file_name>")
-
 file_namespace.add_resource(FilesConversionAPI, "/convert")

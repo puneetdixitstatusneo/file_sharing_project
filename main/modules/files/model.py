@@ -13,7 +13,7 @@ class Files(BaseModel):
     # date_saved = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     file_location = db.Column(db.Text, nullable=False)
     uid = db.Column(db.String(32), nullable = False)
-
+    size = db.Column(db.Float, nullable = False)
     project_id = db.Column(db.ForeignKey('projects.id'))
     user_id = db.Column(db.ForeignKey("auth_user.id"))
 

@@ -13,7 +13,7 @@ class FileConversion():
 
 
     def converter(self, source_ext, destination_ext, source_file_path):
-        destination_file_path = source_file_path.replace(source_ext, destination_ext)
+        destination_file_path = source_file_path.replace("."+source_ext, "."+destination_ext)
         if source_ext == "json" and destination_ext == "csv":
             return self.json_to_csv(source_file_path, destination_file_path)
             
@@ -45,12 +45,12 @@ class FileConversion():
 
     def csv_to_json(self, csvFilePath, jsonFilePath):
         jsonArray = []
-        with open(csvFilePath, encoding='utf-8') as csvf: 
+        with open(csvFilePath, encoding='utf-8-sig') as csvf: 
             csvReader = csv.DictReader(csvf) 
             for row in csvReader: 
                 jsonArray.append(row)
     
-        with open(jsonFilePath, 'w', encoding='utf-8') as jsonf: 
+        with open(jsonFilePath, 'w', encoding='utf-8-sig') as jsonf: 
             jsonString = json.dumps(jsonArray, indent=4)
             jsonf.write(jsonString)
 
