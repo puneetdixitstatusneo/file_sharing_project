@@ -10,6 +10,16 @@ class AddFileSchema(Schema):
     file_name = fields.String(required=True)
     # file_location = fields.String(required=True)
     project_id = fields.Integer(required=True)
+
+
+class GetFileSchema(Schema):
+    """
+    Schema to get files from a project.
+    """
+
+    # file_name = fields.String(required=True)
+    # file_location = fields.String(required=True)
+    project_id = fields.Integer(required=True)
     
 
 
