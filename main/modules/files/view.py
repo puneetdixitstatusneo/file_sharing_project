@@ -5,7 +5,7 @@ from flask_restx import Namespace, Resource
 from main.modules.files.controller import FilesController
 from main.modules.projects.controller import ProjectsController
 from main.modules.files.converter import FileConversion
-from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema, FileConversionSchema
+from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema, FileConversionSchema, GetFileSchema
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
 
@@ -18,7 +18,8 @@ class FilesApi(Resource):
         :return:
         """
         auth_user = AuthUserController.get_current_auth_user()
-        response = FilesController.get_files(auth_user)
+        data = get_data_from_request_or_raise_validation_error(GetFileSchema, request.json)
+        response = FilesController.get_file_by_project_id(data["project_id"], auth_user)
         return jsonify(response)
 
     def post(self):
@@ -40,9 +41,7 @@ class FilesApi(Resource):
         data.update({"size": size})
         data.update({"file_location": file_location})
         file_id = FilesController.add_file(data)
-        response = make_response(
-            jsonify({"message": "File added", "location": file_location, "id": file_id}), 201
-        )
+        response = make_response(jsonify({"message": "File added", "location": file_location, "id": file_id}), 201)
         response.headers["Location"] = f"file_location"
         return response
 
