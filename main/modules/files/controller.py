@@ -43,6 +43,19 @@ class FilesController:
         else:
             files = Files.query.filter_by(user_id=auth_user.id)
         return [file.serialize() for file in files]
+    
+    @classmethod
+    def get_file_by_project_id(cls, project_id: int, auth_user: AuthUser) -> dict:
+        """
+        This function is used to get an file by project_id.
+        :param project_id:
+        :param auth_user:
+        :return dict:
+        """
+        files = Files.query.filter_by(project_id=project_id)
+        # files = Files.query.filter_by(user_id=auth_user.id)
+        return [file.serialize() for file in files]
+        
 
     @classmethod
     def get_file_by_file_id(cls, file_id: int, auth_user: AuthUser) -> dict:
