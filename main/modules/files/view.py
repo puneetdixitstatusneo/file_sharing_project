@@ -9,18 +9,30 @@ from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema,
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
 
-class FilesApi(Resource):
+class GetProjectFilesApi(Resource):
     method_decorators = [jwt_required()]
 
-    def get(self):
+    def get(self, project_id: int):
         """
         This function is used to get the list of fies.
         :return:
         """
         auth_user = AuthUserController.get_current_auth_user()
-        data = get_data_from_request_or_raise_validation_error(GetFileSchema, request.json)
-        response = FilesController.get_file_by_project_id(data["project_id"], auth_user)
+        response = FilesController.get_file_by_project_id(project_id, auth_user)
         return jsonify(response)
+
+    # def get(self):
+    #     """
+    #     This function is used to get the list of fies.
+    #     :return:
+    #     """
+    #     auth_user = AuthUserController.get_current_auth_user()
+    #     data = get_data_from_request_or_raise_validation_error(GetFileSchema, request.json)
+    #     response = FilesController.get_file_by_project_id(data["project_id"], auth_user)
+    #     return jsonify(response)
+
+class FilesUploadAPI(Resource):
+    method_decorators = [jwt_required()]
 
     def post(self):
         """
@@ -46,18 +58,18 @@ class FilesApi(Resource):
         return response
 
 
-class FilesApi2(Resource):
+class FileOperationAPI(Resource):
     method_decorators = [jwt_required()]
 
-    def get(self, file_id: int):
-        """
-        This function is used to get the particular file by file_id
-        :param file_id:
-        :return:
-        """
-        auth_user = AuthUserController.get_current_auth_user()
-        response = FilesController.get_file_by_file_id(file_id, auth_user)
-        return jsonify(response)
+    # def get(self, file_id: int):
+    #     """
+    #     This function is used to get the particular file by file_id
+    #     :param file_id:
+    #     :return:
+    #     """
+    #     auth_user = AuthUserController.get_current_auth_user()
+    #     response = FilesController.get_file_by_file_id(file_id, auth_user)
+    #     return jsonify(response)
 
     def put(self, file_id: int):
         """
@@ -82,7 +94,7 @@ class FilesApi2(Resource):
         return jsonify(response)
 
 
-class FilesApi3(Resource):
+class FilesDownloadAPI(Resource):
     method_decorators = [jwt_required()]
 
     def get(self, uuid : str, file_name :str):
@@ -130,9 +142,9 @@ class FilesConversionAPI(Resource):
         return response
 
 
-
 file_namespace = Namespace("files", description="File Operations")
-file_namespace.add_resource(FilesApi, "")
-file_namespace.add_resource(FilesApi2, "/<int:file_id>")
-file_namespace.add_resource(FilesApi3, "/<string:uuid>/<string:file_name>")
+file_namespace.add_resource(GetProjectFilesApi, "/<int:project_id>")
+file_namespace.add_resource(FilesUploadAPI, "")
+file_namespace.add_resource(FileOperationAPI, "/<int:file_id>")
+file_namespace.add_resource(FilesDownloadAPI, "/<string:uuid>/<string:file_name>")
 file_namespace.add_resource(FilesConversionAPI, "/convert")
