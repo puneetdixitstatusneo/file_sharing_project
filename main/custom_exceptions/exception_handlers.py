@@ -37,3 +37,6 @@ def handle_unauthorized_user_error(error):
 
 def handle_entity_not_found_error(error):
     return create_error_response(error)
+
+def handle_entity_already_exists_error(error):
+    return create_error_response(error)

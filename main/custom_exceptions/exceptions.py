@@ -27,3 +27,12 @@ class EntityNotFoundError(Exception):
     def __init__(self, error_msg = None):
         super().__init__(error_msg or "Entity not found!!!")
         self.status_code = 404
+
+class EntityAlreadyExistsError(Exception):
+    """
+    This is the custom exception class to raise an error if entity already exists.
+    """
+
+    def __init__(self, error_msg = None):
+        super().__init__(error_msg or "Entity Already Exists!!!")
+        self.status_code = 404
