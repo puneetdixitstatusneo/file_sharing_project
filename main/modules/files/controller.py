@@ -1,4 +1,4 @@
-from main.custom_exceptions import EntityNotFoundError, UnauthorizedUserError
+from main.custom_exceptions import EntityNotFoundError, UnauthorizedUserError, EntityAlreadyExistsError
 from main.modules.files.model import Files
 from main.modules.auth.controller import AuthUserController
 from main.modules.auth.model import AuthUser
@@ -44,6 +44,20 @@ class FilesController:
             files = Files.query.filter_by(user_id=auth_user.id)
         return [file.serialize() for file in files]
     
+
+    @classmethod
+    def get_file_by_file_name(cls, file_name: str, project_id: int, auth_user: AuthUser) -> dict:
+        """
+        This function is used to get an file by file_name.
+        :param file_name:
+        :param auth_user:
+        :return dict:
+        """
+        files = Files.query.filter_by(file_name=file_name, project_id= project_id)
+        # files = Files.query.filter_by(user_id=auth_user.id)
+        return [file.serialize() for file in files]
+
+
     @classmethod
     def get_file_by_project_id(cls, project_id: int, auth_user: AuthUser) -> dict:
         """
@@ -71,7 +85,7 @@ class FilesController:
     
 
     @classmethod
-    def get_file_by_uuid(cls, uuid: str, auth_user: AuthUser) -> dict:
+    def get_file_by_uuid(cls, uuid: str) -> dict:
         """
         This function is used to get an file by UUID.
         :param uid:
@@ -79,21 +93,21 @@ class FilesController:
         :return dict:
         """
         file = Files.query.filter_by(uid=uuid).first()
-        cls.required_checks(auth_user, file)
+        # cls.required_checks(auth_user, file)
         return file.serialize()
     
 
-    @classmethod
-    def get_file_by_file_link(cls, file_link: str, auth_user: AuthUser) -> dict:
-        """
-        This function is used to get an file by file link.
-        :param file_link:
-        :param auth_user:
-        :return dict:
-        """
-        file = Files.query.filter_by(file_location=file_link).first()
-        cls.required_checks(auth_user, file)
-        return file.serialize()
+    # @classmethod
+    # def get_file_by_file_link(cls, file_link: str, auth_user: AuthUser) -> dict:
+    #     """
+    #     This function is used to get an file by file link.
+    #     :param file_link:
+    #     :param auth_user:
+    #     :return dict:
+    #     """
+    #     file = Files.query.filter_by(file_location=file_link).first()
+    #     cls.required_checks(auth_user, file)
+    #     return file.serialize()
 
 
     @classmethod
@@ -150,3 +164,5 @@ class FilesController:
             raise EntityNotFoundError("File not found!!!")
         if auth_user.role != AuthUserController.ROLES.ADMIN.value and file.user_id != auth_user.id:
             raise UnauthorizedUserError
+        
+
