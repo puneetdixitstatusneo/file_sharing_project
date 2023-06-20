@@ -38,7 +38,8 @@ class FileConversionSchema(Schema):
     """
     Schema to perform Conversion Operations
     """
-
-    from_ext = fields.String(required=False)
-    to_ext = fields.String(required=False)
-    file_link = fields.String(required=False)
+    id = fields.Integer(required=True)
+    output_file_name = fields.String(required=True)
+    from_ext = fields.String(required=True)
+    to_ext = fields.String(required=True)
+    project_id = fields.Integer(required=True)
