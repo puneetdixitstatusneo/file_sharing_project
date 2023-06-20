@@ -8,6 +8,7 @@ from main.modules.files.converter import FileConversion
 from main.modules.files.schema_validator import AddFileSchema, UpdateFileSchema, FileConversionSchema, GetFileSchema
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
+from main.custom_exceptions import EntityAlreadyExistsError
 
 class GetProjectFilesApi(Resource):
     method_decorators = [jwt_required()]
@@ -44,13 +45,14 @@ class FilesUploadAPI(Resource):
         project_id = request.form["project_id"]
         data = {"file_name": file.filename, "project_id": project_id}
         data = get_data_from_request_or_raise_validation_error(AddFileSchema, data)
+        if len(FilesController.get_file_by_file_name(data["file_name"], data["project_id"], auth_user)) > 0:
+            raise EntityAlreadyExistsError("A file with similar name already exists.")
         ProjectsController.get_project_by_project_id(data["project_id"], auth_user)
         data.update({"extension": os.path.splitext(file.filename)[-1]})
         data.update({"uid": generate_uuid()})
         data.update({"user_id": auth_user.id})
         file_location = FilesController.save_file(request, auth_user.id)
-        size = os.stat(file_location).st_size
-        data.update({"size": size})
+        data.update({"size": os.stat(file_location).st_size})
         data.update({"file_location": file_location})
         file_id = FilesController.add_file(data)
         response = make_response(jsonify({"message": "File added", "location": file_location, "id": file_id}), 201)
@@ -95,15 +97,16 @@ class FileOperationAPI(Resource):
 
 
 class FilesDownloadAPI(Resource):
-    method_decorators = [jwt_required()]
+    # method_decorators = [jwt_required()]
 
     def get(self, uuid : str, file_name :str):
         """
         This function is used to download a file.
         :return:
         """
-        auth_user = AuthUserController.get_current_auth_user()
-        file = FilesController.get_file_by_uuid(uuid, auth_user)
+        request.direct_passthrough = False
+        # auth_user = AuthUserController.get_current_auth_user()
+        file = FilesController.get_file_by_uuid(uuid)
         print(os.path.dirname(file["file_location"]))
         print(file["file_name"])
         # if file["extension"].lower() in [".json", ".xml"]:
@@ -122,8 +125,18 @@ class FilesConversionAPI(Resource):
         """
         auth_user = AuthUserController.get_current_auth_user()
         data = get_data_from_request_or_raise_validation_error(FileConversionSchema, request.json)
-        file_data = FilesController.get_file_by_file_link(data["file_link"], auth_user)
-        dest_file_location = FileConversion(file_data["file_location"], data["from_ext"], data["to_ext"]).destination_file_path
+        # data = {   "output_file_name": "",
+        #             "from_ext": "json",
+        #             "to_ext": "csv",
+        #             "id": 94,
+        #               "project_id": 2
+        #             }
+        output_file = data["output_file_name"] + "." + data["to_ext"]
+        if len(FilesController.get_file_by_file_name(output_file, data["project_id"], auth_user)) > 0:
+            raise EntityAlreadyExistsError(f"A file with name {output_file} already exists.")
+
+        file_data = FilesController.get_file_by_file_id(data["id"], auth_user)
+        dest_file_location = FileConversion(file_data["file_location"], data["from_ext"], data["to_ext"], data["output_file_name"]).destination_file_path
         file_data.update({"file_name": os.path.basename(dest_file_location)})
         file_data.update({"extension": "."+data["to_ext"]})
         file_data.update({"file_location": dest_file_location})
@@ -136,7 +149,7 @@ class FilesConversionAPI(Resource):
 
         file_id = FilesController.add_file(file_data)
         response = make_response(
-            jsonify({"message": "File Conversion Successfull.", "location": dest_file_location, "id": file_id}), 201
+            jsonify({"message": "File Converted Successfully.", "location": dest_file_location, "id": file_id}), 201
         )
         response.headers["Location"] = f"file_location"
         return response
