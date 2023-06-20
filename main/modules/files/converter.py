@@ -2,18 +2,25 @@ import json
 import csv
 import yaml
 from yaml import SafeLoader
+import os
 
 
 class FileConversion():
-    def __init__(self, source_file_path, source_ext, destination_ext):
+    def __init__(self, source_file_path, source_ext, destination_ext, destination_file_name = ""):
+        self.source_file_path = source_file_path
         self.source_ext = source_ext
         self.destination_ext = destination_ext
-        self.source_file_path = source_file_path
-        self.destination_file_path = self.converter(self.source_ext, self.destination_ext, self.source_file_path)
+        self.destination_file_name = destination_file_name
+        self.destination_file_path = self.converter(self.source_ext, self.destination_ext, self.source_file_path, self.destination_file_name)
 
 
-    def converter(self, source_ext, destination_ext, source_file_path):
-        destination_file_path = source_file_path.replace("."+source_ext, "."+destination_ext)
+    def converter(self, source_ext, destination_ext, source_file_path, destination_file_name):
+
+        if destination_file_name == "":
+            destination_file_path = source_file_path.replace("."+source_ext, "."+destination_ext)
+        else:
+            destination_file_path = os.path.join(os.path.dirname(source_file_path), destination_file_name+"."+destination_ext)
+
         if source_ext == "json" and destination_ext == "csv":
             return self.json_to_csv(source_file_path, destination_file_path)
             
