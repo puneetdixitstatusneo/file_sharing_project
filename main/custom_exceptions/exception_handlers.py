@@ -1,4 +1,5 @@
 from flask import jsonify, request
+from werkzeug.exceptions import NotFound
 
 
 def create_error_response(error):
@@ -13,8 +14,9 @@ def create_error_response(error):
 
 #  below are the handlers for custom exception classes.
 
-
 def handle_exception(e, app):
+    if isinstance(e, NotFound):
+        return jsonify(error=e.description), e.code
     request_data = {
         "method": request.method,
         "url": request.url,
@@ -37,6 +39,7 @@ def handle_unauthorized_user_error(error):
 
 def handle_entity_not_found_error(error):
     return create_error_response(error)
+
 
 def handle_entity_already_exists_error(error):
     return create_error_response(error)
