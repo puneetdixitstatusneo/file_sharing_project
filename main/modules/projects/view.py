@@ -8,7 +8,7 @@ from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error
 
 
-class ProjectsApi(Resource):
+class ProjectListApi(Resource):
     method_decorators = [jwt_required()]
 
     def get(self):
@@ -36,7 +36,7 @@ class ProjectsApi(Resource):
         return response
 
 
-class ProjectsApi2(Resource):
+class ProjectDetailApi(Resource):
     method_decorators = [jwt_required()]
 
     @staticmethod
@@ -75,5 +75,5 @@ class ProjectsApi2(Resource):
 
 
 project_namespace = Namespace("projects", description="Projects Operations")
-project_namespace.add_resource(ProjectsApi, "")
-project_namespace.add_resource(ProjectsApi2, "/<int:project_id>")
+project_namespace.add_resource(ProjectListApi, "")
+project_namespace.add_resource(ProjectDetailApi, "/<int:project_id>")
