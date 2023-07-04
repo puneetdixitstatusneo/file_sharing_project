@@ -39,7 +39,8 @@ class ProjectsApi(Resource):
 class ProjectsApi2(Resource):
     method_decorators = [jwt_required()]
 
-    def get(self, project_id: int):
+    @staticmethod
+    def get(project_id: int):
         """
         This function is used to get the particular project by project_id
         :param project_id:
@@ -49,7 +50,8 @@ class ProjectsApi2(Resource):
         response = ProjectsController.get_project_by_project_id(project_id, auth_user)
         return jsonify(response)
 
-    def put(self, project_id: int):
+    @staticmethod
+    def put(project_id: int):
         """
         This function is used to update the project by project_id
         :param project_id:
@@ -60,7 +62,8 @@ class ProjectsApi2(Resource):
         response = ProjectsController.update_project(project_id, data, auth_user)
         return jsonify(response)
 
-    def delete(self, project_id: int):
+    @staticmethod
+    def delete(project_id: int):
         """
         This function is used to delete the project by project_id.
         :param project_id:
