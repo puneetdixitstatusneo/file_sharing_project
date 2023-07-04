@@ -11,13 +11,12 @@ class FilesController:
     This is the controller class which is used to handle all the logical and CURD operations.
     """
     @classmethod
-    def save_file(cls, request, user_id):
-        f = request.files["file"]
+    def save_file(cls, file, user_id):
         server_path = current_app.config.get('SERVER_PATH')
         now = datetime.now().date().strftime("%Y-%m-%d")
         os.makedirs(os.path.join(server_path, str(user_id), now), exist_ok=True)
-        file_path = os.path.join(server_path, str(user_id), now, f.filename)
-        f.save(file_path)
+        file_path = os.path.join(server_path, str(user_id), now, file.filename)
+        file.save(file_path)
         return file_path
 
     @classmethod
@@ -53,7 +52,7 @@ class FilesController:
         :param auth_user:
         :return dict:
         """
-        files = Files.query.filter_by(file_name=file_name, project_id= project_id)
+        files = Files.query.filter_by(file_name=file_name, project_id = project_id)
         # files = Files.query.filter_by(user_id=auth_user.id)
         return [file.serialize() for file in files]
 
