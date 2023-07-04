@@ -30,7 +30,7 @@ def get_app(env=None):
         app.register_error_handler(exc[0], exc[1])
 
     app.logger.addHandler(get_handler("exceptions", ERROR))
-    # app.after_request(log_user_access)
+    app.after_request(log_user_access)
     app.register_error_handler(Exception, lambda e: handle_exception(e, app))
 
     return app
