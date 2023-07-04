@@ -115,7 +115,7 @@ def log_user_access(response):
         f"Path: {request.path}\n"
         f"Headers: {request.headers}"
         f"Request Payload: {request.get_data(as_text=True)}\n"
-        f"Response data: {response.get_data(as_text=True)}\n"
+        f"Response data: { response.headers['Content-Disposition'] if request.path.startswith('/files') and request.path.count('/') == 3 else response.get_data(as_text=True)}\n"
         f"Status code: {response.status_code}"
     )
     return response
