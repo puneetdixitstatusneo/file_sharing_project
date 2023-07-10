@@ -54,7 +54,10 @@ class JWTController:
         :param auth_user:
         :return:
         """
-        identity = {"user_id": auth_user.id}
+        identity = {
+                    "user_id": auth_user.id,
+                    "role": auth_user.role
+                    }
         return {
             "access_token": create_access_token(identity=identity),
             "refresh_token": create_refresh_token(identity=identity),
