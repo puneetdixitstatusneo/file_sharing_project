@@ -60,10 +60,10 @@ class AuthUserController:
         auth_user = cls.get_current_auth_user()
         if check_password_hash(auth_user.password, update_password_data["old_password"]):
             if check_password_hash(auth_user.password, update_password_data["new_password"]):
-                return {}, "new password can not same as old password"
+                return {}, "New password can not same as old password"
             auth_user.update({"password": generate_password_hash(update_password_data["new_password"])})
             return {"status": "success"}, ""
-        return {}, "Old password is invalid"
+        return {}, "Invalid Current Password"
 
     @classmethod
     def get_token(cls, login_data: dict) -> [dict, str]:
