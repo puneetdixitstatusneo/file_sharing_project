@@ -11,10 +11,12 @@ class FileConversion():
         self.source_ext = source_ext
         self.destination_ext = destination_ext
         self.destination_file_name = destination_file_name
-        self.destination_file_path = self.converter(self.source_ext, self.destination_ext, self.source_file_path, self.destination_file_name)
+        self.status, self.destination_file_path = self.convert(self.source_ext, self.destination_ext, self.source_file_path, self.destination_file_name)
 
 
-    def converter(self, source_ext, destination_ext, source_file_path, destination_file_name):
+
+
+    def convert(self, source_ext, destination_ext, source_file_path, destination_file_name):
 
         if destination_file_name == "":
             destination_file_path = source_file_path.replace("."+source_ext, "."+destination_ext)
@@ -22,20 +24,20 @@ class FileConversion():
             destination_file_path = os.path.join(os.path.dirname(source_file_path), destination_file_name+"."+destination_ext)
 
         if source_ext == "json" and destination_ext == "csv":
-            return self.json_to_csv(source_file_path, destination_file_path)
+            return True, self.json_to_csv(source_file_path, destination_file_path)
             
         elif source_ext == "csv" and destination_ext == "json":
-            return self.csv_to_json(source_file_path, destination_file_path)
+            return True, self.csv_to_json(source_file_path, destination_file_path)
         
         elif source_ext == "json" and destination_ext == "yaml":
-            return self.json_to_yaml(source_file_path, destination_file_path)
+            return True, self.json_to_yaml(source_file_path, destination_file_path)
         
         elif source_ext == "yaml" and destination_ext == "json":
-            return self.yaml_to_json(source_file_path, destination_file_path)
-
+            return True, self.yaml_to_json(source_file_path, destination_file_path)
+        return False, ""
 
     def json_to_csv(self, source_file_path, destination_file_path):
-        with open(source_file_path) as json_file:
+        with open(source_file_path, encoding='utf-8-sig') as json_file:
             jsondata = json.load(json_file)
         data_file = open(destination_file_path, 'w', newline='')
         csv_writer = csv.writer(data_file)
@@ -65,7 +67,7 @@ class FileConversion():
 
 
     def json_to_yaml(self, source_file_path, destination_file_path):
-        with open(source_file_path) as json_file:
+        with open(source_file_path, encoding='utf-8-sig') as json_file:
             json_data = json.load(json_file)
             for data in json_data:
                 file=open(destination_file_path,"a")
