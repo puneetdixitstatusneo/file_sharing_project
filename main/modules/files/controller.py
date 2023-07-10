@@ -1,10 +1,13 @@
+import os
+from datetime import datetime
 from main.custom_exceptions import EntityNotFoundError, UnauthorizedUserError, EntityAlreadyExistsError
 from main.modules.files.model import Files
 from main.modules.auth.controller import AuthUserController
 from main.modules.auth.model import AuthUser
-from flask import current_app
-import os
-from datetime import datetime
+from flask import current_app, make_response, jsonify
+from main.utils import generate_uuid
+from main.modules.files.converter import FileConversion
+
 
 class FilesController:
     """
@@ -53,7 +56,6 @@ class FilesController:
         :return dict:
         """
         files = Files.query.filter_by(file_name=file_name, project_id = project_id)
-        # files = Files.query.filter_by(user_id=auth_user.id)
         return [file.serialize() for file in files]
 
 
@@ -66,7 +68,6 @@ class FilesController:
         :return dict:
         """
         files = Files.query.filter_by(project_id=project_id)
-        # files = Files.query.filter_by(user_id=auth_user.id)
         return [file.serialize() for file in files]
         
 
@@ -95,29 +96,18 @@ class FilesController:
         # cls.required_checks(auth_user, file)
         return file.serialize()
     
-
-    # @classmethod
-    # def get_file_by_file_link(cls, file_link: str, auth_user: AuthUser) -> dict:
-    #     """
-    #     This function is used to get an file by file link.
-    #     :param file_link:
-    #     :param auth_user:
-    #     :return dict:
-    #     """
-    #     file = Files.query.filter_by(file_location=file_link).first()
-    #     cls.required_checks(auth_user, file)
-    #     return file.serialize()
-
-
     @classmethod
-    def generate_file_link(cls, file_location: str, auth_user: AuthUser) -> dict:
+    def get_file_by_converted_uuid(cls, converted_uuid:str, auth_user: AuthUser) -> dict:
         """
-        This function is used to generate file link from file location.
-        :param file_location:
+        This function is used to get an file by UUID.
+        :param uid:
         :param auth_user:
         :return dict:
         """
-        pass
+        files = Files.query.filter_by(conversion_uuid=converted_uuid)
+        # cls.required_checks(auth_user, file)
+        return [file.serialize() for file in files]
+
 
 
     @classmethod
@@ -148,6 +138,43 @@ class FilesController:
             os.remove(file.file_location)
         Files.delete(id=file_id)
         return {"msg": "success"}
+    
+    @classmethod
+    def add_converted_file(cls, data, auth_user):
+        file_data = cls.get_file_by_file_id(data["id"], auth_user)
+
+        if data["from_ext"].startswith("."):
+            data["from_ext"] = data["from_ext"][1:]
+        if data["to_ext"].startswith("."):
+            data["to_ext"] = data["to_ext"][1:]
+
+        output_file = data["output_file_name"] + "." + data["to_ext"]
+
+        if FilesController.get_file_by_file_name(output_file, file_data["project_id"], auth_user):
+            raise EntityAlreadyExistsError(f"A file with name {output_file} already exists.")
+
+        fc = FileConversion(file_data["file_location"], data["from_ext"], data["to_ext"], data["output_file_name"])
+        if not fc.status:
+            raise EntityNotFoundError(f'File Conversion not possible for {data["from_ext"]} to {data["to_ext"]} yet')
+            # response = make_response(jsonify({"message": f'File Conversion not possible for {data["from_ext"]} to {data["to_ext"]} yet',}), 201)
+            # return response
+        dest_file_location = fc.destination_file_path
+        file_data.update({"file_name": os.path.basename(dest_file_location),
+                          "extension": "."+data["to_ext"],
+                          "file_location": dest_file_location,
+                          "uid": generate_uuid(),
+                          "user_id": auth_user.id, 
+                          "conversion_uuid": file_data["conversion_uuid"]})
+
+        del file_data["created_at"]
+        del file_data["updated_at"]
+        del file_data["id"]
+        del file_data["username"]
+
+        file_id = cls.add_file(file_data)
+        response = make_response(jsonify({"message": "File Converted Successfully.", "id": file_id}), 201)
+        return response
+
 
     @classmethod
     def required_checks(cls, auth_user: AuthUser, file: Files):
