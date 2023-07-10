@@ -16,7 +16,10 @@ class Files(BaseModel):
     size = db.Column(db.Float, nullable = False)
     project_id = db.Column(db.ForeignKey('projects.id'))
     user_id = db.Column(db.ForeignKey("auth_user.id"))
+    conversion_uuid = db.Column(db.String(32), nullable = False)
+    # converted_from_id = db.Column(db.ForeignKey(Files.id), nullable=True)
 
+    # converted_from = db.relationship('Files', remote_side='files.id', backref="conversions")
     user = db.relationship("AuthUser", backref=db.backref("files", lazy=True))
     project = db.relationship("Projects", backref=db.backref("files", lazy=True))
 
