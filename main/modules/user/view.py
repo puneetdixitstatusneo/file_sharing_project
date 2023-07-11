@@ -62,7 +62,19 @@ class Profiles2(Resource):
         return jsonify(msg="success")
 
 
+class Users(Resource):
+    method_decorators = [jwt_required()]
+
+    def get(self):
+        """
+        This function is used to get the list of user emails.
+        :return:
+        """
+        return jsonify(UserController.get_list_of_user_emails())
+
+
 user_namespace = Namespace("users", description="User Operations")
+user_namespace.add_resource(Users, "/emails/list")
 user_namespace.add_resource(Profile, "/profile")
 user_namespace.add_resource(Profiles, "/profiles")
 user_namespace.add_resource(Profiles2, "/profiles/<int:user_id>")

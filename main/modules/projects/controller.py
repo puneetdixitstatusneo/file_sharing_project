@@ -1,8 +1,9 @@
 from main.custom_exceptions import EntityNotFoundError, UnauthorizedUserError
-from main.modules.projects.model import Projects
+from main.modules.projects.model import Projects, ProjectAccess
 from main.modules.auth.controller import AuthUserController
 from main.modules.auth.model import AuthUser
-
+from main.utils import get_query_including_filters
+from main.db import db
 
 class ProjectsController:
     """
@@ -28,10 +29,16 @@ class ProjectsController:
         :return list[Projects]:
         """
         if auth_user.role == AuthUserController.ROLES.ADMIN.value:
-            projects = Projects.query.all()
-        else:
-            projects = Projects.query.filter_by(user_id=auth_user.id)
-        return [project.serialize() for project in projects]
+            return [project.serialize() for project in Projects.query.all()]
+
+        owned_projects = [{**project.serialize(), 'owner': True} for project in Projects.query.filter_by(user_id=auth_user.id)]
+        filter_dict = {
+            "op_in": {
+                "id": [assigned_project.project_id for assigned_project in ProjectAccess.query.filter_by(email=auth_user.email)]
+            }
+        }
+        assigned_projects = [{**project.serialize(), 'owner': False} for project in get_query_including_filters(db, Projects, filter_dict).all()]
+        return owned_projects + assigned_projects
 
     @classmethod
     def get_project_by_project_id(cls, project_id: int, auth_user: AuthUser) -> dict:
@@ -70,6 +77,15 @@ class ProjectsController:
         project = Projects.query.filter_by(id=project_id).first()
         cls.required_checks(auth_user, project)
         Projects.delete(id=project_id)
+        return {"msg": "success"}
+
+    @classmethod
+    def add_users_to_project(cls, project_id: int, users_email: list):
+        for email in users_email:
+            ProjectAccess.create({
+                "project_id": project_id,
+                "email": email
+            })
         return {"msg": "success"}
 
     @classmethod

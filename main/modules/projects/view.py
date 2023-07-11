@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 
 from main.modules.projects.controller import ProjectsController
-from main.modules.projects.schema_validator import AddProjectSchema, UpdateProjectSchema
+from main.modules.projects.schema_validator import AddProjectSchema, UpdateProjectSchema, AssignUsers
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error
 
@@ -74,6 +74,16 @@ class ProjectDetailApi(Resource):
         return jsonify(response)
 
 
+class AddUserToProject(Resource):
+    method_decorators = [jwt_required()]
+
+    def post(self, project_id: int):
+        data = get_data_from_request_or_raise_validation_error(AssignUsers, request.json)
+        response = ProjectsController.add_users_to_project(project_id, data["users_email"])
+        return jsonify(response)
+
+
 project_namespace = Namespace("projects", description="Projects Operations")
 project_namespace.add_resource(ProjectListApi, "")
 project_namespace.add_resource(ProjectDetailApi, "/<int:project_id>")
+project_namespace.add_resource(AddUserToProject, "/<int:project_id>/assign")

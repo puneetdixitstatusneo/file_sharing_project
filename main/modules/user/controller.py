@@ -40,3 +40,8 @@ class UserController:
         """
         users = User.query.all()
         return [user.serialize() for user in users]
+
+    @classmethod
+    def get_list_of_user_emails(cls) -> list:
+        profiles = cls.get_profiles()
+        return [profile["email"] for profile in profiles]

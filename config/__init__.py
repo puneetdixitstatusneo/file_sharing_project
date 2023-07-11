@@ -52,7 +52,7 @@ class TestingConfig:
     PROPAGATE_EXCEPTIONS = test_config.get("PROPAGATE_EXCEPTIONS")
     SERVER_PATH = config.get("SERVER_PATH")
     DEBUG = True
-    
+
 
 class ProductionConfig():
     SQLALCHEMY_DATABASE_URI = prod_config.get("SQLALCHEMY_DATABASE_URI")
@@ -63,9 +63,6 @@ class ProductionConfig():
     PROPAGATE_EXCEPTIONS = prod_config.get("PROPAGATE_EXCEPTIONS")
     SERVER_PATH = config.get("SERVER_PATH")
     DEBUG = False
-
-
-
 
 
 config_by_name = dict(dev=DevelopmentConfig, test=TestingConfig, prod=ProductionConfig)
