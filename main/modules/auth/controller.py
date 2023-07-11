@@ -16,7 +16,7 @@ class AuthUserController:
         """
         ROLE is an enum of valid roles in the system.
         """
-
+        SUPER_ADMIN = "super_admin"
         ADMIN = "admin"
         USER = "user"
 
