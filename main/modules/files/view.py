@@ -8,7 +8,7 @@ from main.modules.projects.controller import ProjectsController
 from main.modules.files.schema_validator import AddFileSchema, AddFileNameSchema, UpdateFileSchema, FileConversionSchema
 from main.modules.auth.controller import AuthUserController
 from main.utils import get_data_from_request_or_raise_validation_error, generate_uuid
-from main.custom_exceptions import EntityAlreadyExistsError
+from main.custom_exceptions import EntityAlreadyExistsError, CustomValidationError
 
 class GetProjectFilesApi(Resource):
     method_decorators = [jwt_required()]
@@ -45,30 +45,31 @@ class FilesUploadAPI(Resource):
         :return:
         """
         auth_user = AuthUserController.get_current_auth_user()
-        file = request.files['file']
-        project_id = request.form["project_id"]
-        data = {"file_name": file.filename, "project_id": project_id}
 
-        # file = request.files.get('file', None)
-        # project_id = request.form.get('project_id', None)
-        data = get_data_from_request_or_raise_validation_error(AddFileNameSchema, data)
+        
 
-        data = {"file_name": file.filename if file is not None else file, "project_id": project_id}
-        data = get_data_from_request_or_raise_validation_error(AddFileNameSchema, data)
-        if FilesController.get_file_by_file_name(data["file_name"], data["project_id"], auth_user):
-            raise EntityAlreadyExistsError("A file with similar name already exists.")
-        ProjectsController.get_project_by_project_id(data["project_id"], auth_user)
-        data.update({"extension": os.path.splitext(file.filename)[-1]})
-        data.update({"uid": generate_uuid()})
-        data.update({"conversion_uuid": generate_uuid()})
+        file = request.files.get('file')
+        project_id = request.form.get('project_id')
+        if file and project_id:
+            data = {"file_name": file.filename if file is not None else file, "project_id": project_id}
+            # data = get_data_from_request_or_raise_validation_error(AddFileNameSchema, data)
 
-        data.update({"user_id": auth_user.id})
-        file_location = FilesController.save_file(file, auth_user.id)
-        data.update({"size": os.stat(file_location).st_size})
-        data.update({"file_location": file_location})
-        file_id = FilesController.add_file(data)
-        response = make_response(jsonify({"message": "File added", "id": file_id}), 201)
-        return response
+            if FilesController.get_file_by_file_name(data["file_name"], data["project_id"], auth_user):
+                raise EntityAlreadyExistsError("A file with similar name already exists.")
+            ProjectsController.get_project_by_project_id(data["project_id"], auth_user)
+            data.update({"extension": os.path.splitext(file.filename)[-1]})
+            data.update({"uid": generate_uuid()})
+            data.update({"conversion_uuid": generate_uuid()})
+
+            data.update({"user_id": auth_user.id})
+            file_location = FilesController.save_file(file, auth_user.id)
+            data.update({"size": os.stat(file_location).st_size})
+            data.update({"file_location": file_location})
+            file_id = FilesController.add_file(data)
+            response = make_response(jsonify({"message": "File added", "id": file_id}), 201)
+            return response
+        raise  CustomValidationError("File and project_id both are required parameters.")
+
 
 
 class FileOperationAPI(Resource):
