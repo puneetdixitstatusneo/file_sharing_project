@@ -5,14 +5,11 @@ class Projects(BaseModel):
     """
     Model for projects.
     """
-
     __tablename__ = "projects"
 
     project_name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.ForeignKey("auth_user.id"))
-
     user = db.relationship("AuthUser", backref=db.backref("projects", lazy=True))
-
 
     def serialize(self) -> dict:
         """
@@ -23,4 +20,16 @@ class Projects(BaseModel):
         dict_data["username"] = self.user.username if self.user else None
         return dict_data
 
+
+
+class ProjectAccess(BaseModel):
+    """
+    Model to Manage Project Permissions
+    """
+    project_id = db.Column(db.ForeignKey("auth_user.id"))
+    user_id = db.Column(db.ForeignKey("auth_user.id"))
+    permission_id = db.Column(db.ForeignKey("auth_user.id"))
+
+
+#1) API to list down all email -ids - 
 
