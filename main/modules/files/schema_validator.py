@@ -1,8 +1,15 @@
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
 
-
 class AddFileSchema(Schema):
+    """
+    Schema to add file to the database.
+    """
+    file = fields.Raw(type='file', required=True)
+    project_id = fields.Integer(required=True)
+
+
+class AddFileNameSchema(Schema):
     """
     Schema to add file to the database.
     """
